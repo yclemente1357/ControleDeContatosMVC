@@ -14,8 +14,6 @@ public class ContatoController : Controller
     public IActionResult Index()
     {
         List<ContatoModel> contatos = _contatoRepositorio.BuscarTodos();
-
-
         return View(contatos);
     }
     public IActionResult Criar()
@@ -23,14 +21,22 @@ public class ContatoController : Controller
         return View();
     }
 
-    public IActionResult Editar()
+    public IActionResult Apagar(int id)
     {
-        return View();
+        _contatoRepositorio.Apagar(id);
+        return RedirectToAction("Index");
     }
 
-    public IActionResult ApagarConfirmacao()
+        public IActionResult Editar(int id)
     {
-        return View();
+        ContatoModel contato = _contatoRepositorio.ListarPorId(id);
+        return View(contato);
+    }
+
+    public IActionResult ApagarConfirmacao(int id)
+    {
+        ContatoModel contato = _contatoRepositorio.ListarPorId(id);
+        return View(contato);
     }
 
 
@@ -40,5 +46,12 @@ public class ContatoController : Controller
     {
         _contatoRepositorio.Adicionar(contato);
             return RedirectToAction("Index");
+    }
+
+    [HttpPost]
+    public IActionResult Alterar(ContatoModel contato)
+    {
+        _contatoRepositorio.Atualiza(contato);
+        return RedirectToAction("Index");
     }
 }
