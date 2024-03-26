@@ -1,43 +1,42 @@
 using ControleDeContatos.Data;
+using ControleDeContatos.Repositorio;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
-namespace ControleDeContatos;
+var builder = WebApplication.CreateBuilder(args);
 
-public class Program
+// Adiciona os serviços de MVC ao aplicativo.
+builder.Services.AddControllersWithViews();
+
+// Configura o Entity Framework Core com SQL Server.
+builder.Services.AddEntityFrameworkSqlServer()
+    .AddDbContext<BancoContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
+
+
+// Registra os repositórios no sistema de DI.
+builder.Services.AddScoped<IContatoRepositorio, ContatoRepositorio>();
+
+var app = builder.Build();
+
+// Configura o pipeline de requisições HTTP.
+if (app.Environment.IsDevelopment())
 {
-    public static void Main(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args);
-
-        // Add services to the container.
-        builder.Services.AddControllersWithViews();
-
-        builder.Services.AddDbContext<BancoContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("MinhaConexaoSQL")));
-
-
-        var app = builder.Build();
-
-        // Configure the HTTP request pipeline.
-        if (!app.Environment.IsDevelopment())
-        {
-            app.UseExceptionHandler("/Home/Error");
-        }
-        app.UseStaticFiles();
-
-        app.UseRouting();
-
-        app.UseAuthorization();
-
-        app.MapControllerRoute(
-            name: "default",
-            pattern: "{controller=Home}/{action=Index}/{id?}");
-
-        app.Run();
-
-
-    }
-
-    
+    app.UseDeveloperExceptionPage();
 }
+else
+{
+    app.UseExceptionHandler("/Home/Error");
+}
+
+app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.Run();
